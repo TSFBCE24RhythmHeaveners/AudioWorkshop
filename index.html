@@ -3339,9 +3339,9 @@ const STORAGE = {
   fileHandle: null, // FileSystemFileHandle when using File System Access API
 
   showModal() {
-    const hasLocal = !!localStorage.getItem('uishout_index');
+    const hasLocal = !!localStorage.getItem('wcomp_index');
     const hasFileAPI = 'showOpenFilePicker' in window;
-    const savedProjects = JSON.parse(localStorage.getItem('uishout_index')||'[]');
+    const savedProjects = JSON.parse(localStorage.getItem('wcomp_index')||'[]');
 
     const modal = document.createElement('div');
     modal.id = 'storageModal';
@@ -3363,7 +3363,7 @@ const STORAGE = {
           <label style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:#272729;border-radius:10px;border:${hasFileAPI?'1px solid #3a3a3c':'1px solid #2a2a2c'};cursor:${hasFileAPI?'pointer':'not-allowed'};opacity:${hasFileAPI?1:.5}" id="optFile">
             <input type="radio" name="sb" value="file" ${!hasFileAPI?'disabled':''} style="margin-top:2px;accent-color:#ff9f0a">
             <div>
-              <div style="font-weight:600;font-size:13px">Local File <span style="font-size:10px;color:#8e8e93;font-weight:400">(.uishout JSON on your hard drive)</span></div>
+              <div style="font-weight:600;font-size:13px">Local File <span style="font-size:10px;color:#8e8e93;font-weight:400">(.wcomp JSON on your hard drive)</span></div>
               <div style="font-size:11px;color:#8e8e93;margin-top:3px">${hasFileAPI ? 'Saves a real file to disk. Unlimited size. Audio regions preserved as base64. Requires Chrome/Edge 86+.' : 'Not available — requires Chrome or Edge 86+.'}</div>
             </div>
           </label>
@@ -3381,7 +3381,7 @@ const STORAGE = {
         <div style="margin-bottom:16px;padding:10px 14px;background:#111113;border-radius:8px;border:1px solid #2a2a2c">
           <div style="font-size:11px;color:#8e8e93;margin-bottom:6px">Saved projects in browser storage:</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
-            ${savedProjects.map(k=>`<button onclick="STORAGE._closeModal();loadProject('${k}')" style="padding:3px 8px;background:#272729;border:1px solid #3a3a3c;border-radius:4px;color:#f0f0f0;font-size:11px;cursor:pointer">${k.replace('uishout_proj_','')}</button>`).join('')}
+            ${savedProjects.map(k=>`<button onclick="STORAGE._closeModal();loadProject('${k}')" style="padding:3px 8px;background:#272729;border:1px solid #3a3a3c;border-radius:4px;color:#f0f0f0;font-size:11px;cursor:pointer">${k.replace('wcomp_proj_','')}</button>`).join('')}
           </div>
         </div>` : ''}
 
@@ -3424,8 +3424,8 @@ const STORAGE = {
       } else {
         // First save — pick location
         this.fileHandle = await window.showSaveFilePicker({
-          suggestedName: (document.getElementById('projName')?.value||'untitled')+'.uishout',
-          types:[{description:'WaveComposer Project',accept:{'application/json':['.uishout','.json']}}]
+          suggestedName: (document.getElementById('projName')?.value||'untitled')+'.wcomp',
+          types:[{description:'WaveComposer Project',accept:{'application/json':['.wcomp','.json']}}]
         });
         const w = await this.fileHandle.createWritable();
         await w.write(blob); await w.close();
@@ -3439,7 +3439,7 @@ const STORAGE = {
   async loadFromFile() {
     try {
       const [handle] = await window.showOpenFilePicker({
-        types:[{description:'WaveComposer Project',accept:{'application/json':['.uishout','.json']}}]
+        types:[{description:'WaveComposer Project',accept:{'application/json':['.wcomp','.json']}}]
       });
       this.fileHandle = handle;
       const file = await handle.getFile();
@@ -3456,7 +3456,7 @@ const STORAGE = {
 // ================================================================
 //  PROJECT SAVE / LOAD
 // ================================================================
-function _projectKey(){ return 'uishout_proj_'+(document.getElementById('projName')?.value||'default'); }
+function _projectKey(){ return 'wcomp_proj_'+(document.getElementById('projName')?.value||'default'); }
 
 function _buildProjectData() {
   return {
@@ -3501,9 +3501,9 @@ async function saveProject(){
     const key=_projectKey();
     try { localStorage.setItem(key,json); }
     catch(e){ if(e.name==='QuotaExceededError') { notify('❌ Browser storage full — switch to File storage via ⋯'); return; } throw e; }
-    const idx=JSON.parse(localStorage.getItem('uishout_index')||'[]');
+    const idx=JSON.parse(localStorage.getItem('wcomp_index')||'[]');
     if(!idx.includes(key)) idx.push(key);
-    localStorage.setItem('uishout_index',JSON.stringify(idx));
+    localStorage.setItem('wcomp_index',JSON.stringify(idx));
     notify('✅ Saved: '+data.name+' ('+kb+'KB)');
   } catch(e){ notify('Save failed: '+e.message); console.error(e); }
 }
@@ -3513,7 +3513,7 @@ async function loadProject(keyOverride){
   try {
     const key=keyOverride||_projectKey();
     const raw=localStorage.getItem(key);
-    if(!raw){ notify('No saved project: '+key.replace('uishout_proj_','')); return; }
+    if(!raw){ notify('No saved project: '+key.replace('wcomp_proj_','')); return; }
     await _applyProjectData(JSON.parse(raw));
   } catch(e){ notify('Load failed: '+e.message); console.error(e); }
 }
@@ -3600,7 +3600,7 @@ function _renderProjPanel(){
   if(STORAGE.backend==='local'){
     try{
       let used=0;
-      for(let k in localStorage){ if(k.startsWith('uishout')) used+=localStorage[k].length; }
+      for(let k in localStorage){ if(k.startsWith('wcomp')) used+=localStorage[k].length; }
       quota.textContent='Browser storage used: ~'+Math.round(used/1024)+'KB';
     }catch(e){ quota.textContent=''; }
   } else if(STORAGE.backend==='file'){
@@ -3610,13 +3610,13 @@ function _renderProjPanel(){
   }
   const slots=document.getElementById('proj-slots');
   slots.innerHTML='';
-  const idx=JSON.parse(localStorage.getItem('uishout_index')||'[]');
+  const idx=JSON.parse(localStorage.getItem('wcomp_index')||'[]');
   if(!idx.length){
     slots.innerHTML='<div style="font-size:11px;color:var(--dim);padding:8px 0">No saved projects in browser storage</div>';
     return;
   }
   idx.forEach(key=>{
-    const name=key.replace('uishout_proj_','');
+    const name=key.replace('wcomp_proj_','');
     const row=document.createElement('div'); row.className='proj-slot';
     row.innerHTML='<span title="'+name+'">📄 '+name+'</span>'
       +'<button class="load-btn" onclick="toggleProjPanel();loadProject(\''+key+'\')">Load</button>'
@@ -3627,10 +3627,10 @@ function _renderProjPanel(){
 
 function _deleteProjSlot(key,rowEl){
   localStorage.removeItem(key);
-  const idx=JSON.parse(localStorage.getItem('uishout_index')||'[]').filter(k=>k!==key);
-  localStorage.setItem('uishout_index',JSON.stringify(idx));
+  const idx=JSON.parse(localStorage.getItem('wcomp_index')||'[]').filter(k=>k!==key);
+  localStorage.setItem('wcomp_index',JSON.stringify(idx));
   rowEl.remove();
-  notify('Deleted: '+key.replace('uishout_proj_',''));
+  notify('Deleted: '+key.replace('wcomp_proj_',''));
 }
 
 function setProjBackend(b){
@@ -4073,7 +4073,7 @@ function mkArp(root,intervals,dur,beats){const notes=[];let t=0;while(t<beats){i
       <p>Three backends — choose on first launch or via the <strong>⋯</strong> button:</p>
       <ul>
         <li><strong>Browser storage</strong> — fast, no permissions, ~5MB limit. Fine for MIDI-only sessions. Audio regions may not survive reload for large sessions.</li>
-        <li><strong>Local file</strong> — saves a real <code>.uishout</code> JSON file to your hard drive. Unlimited size. Audio regions preserved as base64 PCM. Requires Chrome or Edge 86+.</li>
+        <li><strong>Local file</strong> — saves a real <code>.wcomp</code> JSON file to your hard drive. Unlimited size. Audio regions preserved as base64 PCM. Requires Chrome or Edge 86+.</li>
         <li><strong>None</strong> — no auto-save. Use ⬇ Export WAV to keep your work.</li>
       </ul>
       <p>Auto-save runs every 60 seconds when browser storage is active. File storage saves on every manual 💾 Save press.</p>
